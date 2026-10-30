@@ -35,7 +35,7 @@
 <main>
   <h1>✅ 마이투두</h1>
   <form id="form">
-    <input id="input" type="text" placeholder="할 일을 입력하세요" autocomplete="off" autofocus>
+    <input id="input" type="text" placeholder="할 일을 입력하세요" autocomplete="off" autofocus maxlength="200">
     <button class="add" type="submit">추가</button>
   </form>
   <ul id="list"></ul>
@@ -50,7 +50,13 @@
   try { todos = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 
   const $ = id => document.getElementById(id);
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(todos)); } catch {} };
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(todos));
+    } catch (e) {
+      alert('저장에 실패했어요. 브라우저 저장 공간이 가득 찼거나 시크릿 모드일 수 있어요.');
+    }
+  };
 
   function render() {
     const list = $('list');
