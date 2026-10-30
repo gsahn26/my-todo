@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마이투두</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --text:#1f2328; --muted:#8a9099; --accent:#4f6bed; --line:#e6e8eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16181c; --card:#1f2228; --text:#e8eaed; --muted:#8a9099; --accent:#7b91ff; --line:#2e323a; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; }
+  main { max-width:480px; margin:48px auto; padding:0 16px; }
+  h1 { font-size:28px; margin:0 0 20px; }
+  form { display:flex; gap:8px; margin-bottom:16px; }
+  input[type=text] { flex:1; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--text); font-size:16px; }
+  input[type=text]:focus { outline:2px solid var(--accent); border-color:transparent; }
+  button.add { padding:0 18px; border:0; border-radius:10px; background:var(--accent); color:#fff; font-size:16px; cursor:pointer; }
+  ul { list-style:none; margin:0; padding:0; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+  li { display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
+  li:last-child { border-bottom:0; }
+  li input { width:18px; height:18px; accent-color:var(--accent); cursor:pointer; }
+  li span { flex:1; word-break:break-word; }
+  li.done span { text-decoration:line-through; color:var(--muted); }
+  li button { border:0; background:none; color:var(--muted); font-size:18px; cursor:pointer; }
+  li button:hover { color:#e5484d; }
+  .empty { padding:24px; text-align:center; color:var(--muted); }
+  footer { display:flex; justify-content:space-between; margin-top:12px; color:var(--muted); font-size:14px; }
+  footer button { border:0; background:none; color:var(--muted); cursor:pointer; font-size:14px; }
+  footer button:hover { color:var(--text); }
+</style>
+</head>
+<body>
+<main>
+  <h1>✅ 마이투두</h1>
+  <form id="form">
+    <input id="input" type="text" placeholder="할 일을 입력하세요" autocomplete="off" autofocus>
+    <button class="add" type="submit">추가</button>
+  </form>
+  <ul id="list"></ul>
+  <footer>
+    <span id="count"></span>
+    <button id="clear" type="button">완료 항목 지우기</button>
+  </footer>
+</main>
+<script>
+  const KEY = 'todos';
+  let todos = [];
+  try { todos = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
+
+  const $ = id => document.getElementById(id);
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(todos)); } catch {} };
+
+  function render() {
+    const list = $('list');
+    list.innerHTML = '';
+    if (!todos.length) {
+      list.innerHTML = '<li class="empty">할 일이 없습니다 🎉</li>';
+    }
+    todos.forEach(t => {
+      const li = document.createElement('li');
+      if (t.done) li.className = 'done';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = t.done;
+      cb.onchange = () => { t.done = cb.checked; save(); render(); };
+      const span = document.createElement('span');
+      span.textContent = t.text;
+      const del = document.createElement('button');
+      del.textContent = '✕';
+      del.title = '삭제';
+      del.onclick = () => { todos = todos.filter(x => x !== t); save(); render(); };
+      li.append(cb, span, del);
+      list.append(li);
+    });
+    const left = todos.filter(t => !t.done).length;
+    $('count').textContent = `남은 할 일 ${left}개`;
+  }
+
+  $('form').onsubmit = e => {
+    e.preventDefault();
+    const text = $('input').value.trim();
+    if (!text) return;
+    todos.push({ text, done: false });
+    $('input').value = '';
+    save();
+    render();
+  };
+  $('clear').onclick = () => { todos = todos.filter(t => !t.done); save(); render(); };
+
+  render();
+</script>
+</body>
+</html>
